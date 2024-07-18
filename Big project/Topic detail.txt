@@ -4,7 +4,7 @@ o Press key a to enter the + calculation
 o Press b key to enter calculation –
 o Press key c to enter calculation *
 o Press d key to enter calculation /
-o Press the e key to enter the % calculation
+o Press e key to enter calculation %
 o Press the f key to enter =
 Specific requirements are as follows:
 o When pressing the number keys, the LED is displayed. Because there are only 2 LEDs, only the last 2 numbers are displayed. Wallet
