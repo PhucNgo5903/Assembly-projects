@@ -1,0 +1,103 @@
+.data
+first_half: .space 256
+second_half: .space 256
+prompt_number: .asciiz "Enter your number: "
+lucky: .asciiz "It is a lucky ticket!"
+not_lucky: .asciiz "It is not a lucky ticket!"
+wrong_input: .asciiz "The number is not considered as a ticket!"
+number: .space 256
+
+
+.text
+
+main:
+	li $v0, 4
+	la $a0, prompt_number
+	syscall
+	
+	li $v0, 5
+	syscall
+	move $t0, $v0			#Copy input value to $t0 
+	bltz $t0, error
+	li $s1, 1			#Initialize  digit counter
+	li $t1, 10			#Initialize testing value
+
+count_digits:
+	sub $t2, $t0, $t1		#Input number = Input number - testing value
+	bltz $t2, copy_count		#if result < 0, got the digit count
+	addi $s1, $s1, 1		#Increment counter
+	#Increment testing value
+	sll $t3, $t1, 3		
+	sll $t4, $t1, 1
+	add $t1, $t3, $t4
+	j count_digits
+
+
+copy_count:
+	add $t1, $s1, 0			#move digit counter to $t1
+	
+check_count:				#check digit counter is even or odd, if odd move to error
+	addi $t1, $t1, -2
+	bltz $t1, error
+	beq $t1, 1, error
+	beq $t1, 0, calculate
+	j check_count
+	
+error:
+	li $v0, 4
+	la $a0, wrong_input
+	syscall
+	j exit
+
+calculate:
+	srl $t2, $s1, 1		# $t2 stores digit count/2 
+	li $t3, 0		#Initialize first half sum
+	li $t4, 0		#Initialize second half sum
+	li $s3, 0		#Initialize counter for first_half_loop
+	li $s5, 0		#Initialize counter for second_half_loop
+	li $s4, 10
+	
+first_half_loop:
+	div $t0, $s4		# input number/10
+	mfhi $t5		#Get the reminder in $t5
+	mflo $t0		#Update $t0 by quotient
+	add $t3, $t3, $t5 	#Add digit to the first half
+	addi $s3, $s3, 1	#Increment counter
+	bne $s3, $t2, first_half_loop		#Repeat until counter = digit_count/2
+	
+
+
+
+second_half_loop:
+	div $t0, $s4		#continue deviving for 10
+	mfhi $t5		#Get the reminder in $t5
+	mflo $t0		#Update $t0 by quotient
+	add $t4, $t4, $t5	#Add digit to the second half
+	addi $s5, $s5, 1	#Increment counter
+	bne $s5, $t2, second_half_loop		#Repeat until counter = digit_count/2
+
+
+compare_2_half:
+	beq $t3, $t4, is_lucky	#compare 2 half
+	
+is_not_lucky:
+	li $v0, 4
+	la $a0, not_lucky
+	syscall
+	j exit
+
+is_lucky:
+	li $v0, 4
+	la $a0, lucky
+	syscall
+	j exit
+
+
+exit:
+
+	
+
+	
+	
+	
+	

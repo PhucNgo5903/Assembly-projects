@@ -1,0 +1,14 @@
+Use 2 peripherals, the keyboard and 7-segment LED, to build a simple pocket computer. Support the
++, -, *, /, %. Because the keyboard does not have the above keys, we will use the keys
+o Press key a to enter the + calculation
+o Press b key to enter calculation –
+o Press key c to enter calculation *
+o Press d key to enter calculation /
+o Press the e key to enter the % calculation
+o Press the f key to enter =
+Specific requirements are as follows:
+o When pressing the number keys, the LED is displayed. Because there are only 2 LEDs, only the last 2 numbers are displayed. Wallet
+For example, when pressing key 1 → displaying 01. When further pressing key 2 → displaying 12. When further pressing
+key 3 → display 23.
+o After entering the number, the calculation + - * /% will be entered
+o After pressing the f key (= sign), calculate and display the results on LED.

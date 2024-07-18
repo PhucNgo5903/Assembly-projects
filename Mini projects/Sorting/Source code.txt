@@ -1,0 +1,181 @@
+.data
+student_marks: .space 21
+student_names: .space 400
+buffer: .space 40
+prompt_number: .asciiz "Enter the number of students: "
+prompt_name: .asciiz "Enter student's name: "
+prompt_mark: .asciiz "Enter student's math mark: "
+newline: .asciiz "\n"
+print_sorted_list: "Sorted list of students by math mark (From highest to lowest): "
+number_student: .word 0
+check_val: .asciiz "number_student val contains: "
+Wrong_input: .asciiz "Wrong input number!"
+.text
+
+main:
+	la $s5, buffer
+	la $s6, student_marks
+	la $s7, student_names
+	
+	#Prompt user for the number of students
+	li $v0, 4
+	la $a0, prompt_number
+	syscall
+	
+	#Read the number of students
+	li $v0, 5
+	syscall
+	move $s0, $v0
+	blt $s0, 1 wrong_input
+	
+	bge $s0, 21 wrong_input
+	
+	sw $s0, number_student		#store number of students in number_student variable
+	
+	li $t0, 0			#Initialize array index
+	li $t1, 0			#Initialize counter
+	
+input_loop:
+	#Prompt for student's name
+	li $v0, 4
+	la $a0, prompt_name
+	syscall
+	
+	#Read name and store in student_names
+	li $v0, 8
+	move $a0, $s7
+	li $a1, 20			#Max 20 characters
+	syscall
+	addi $s7, $s7, 20		#Move to next position to store names
+	
+	#Prompt for student's mark
+	li $v0, 4
+	la $a0, prompt_mark
+	syscall
+	
+	#Read mark
+	li $v0, 5
+	syscall
+	add $t2, $s6, $t0
+	sw $v0, 0($t2)			#Store marks in student_marks array
+	
+	
+	addi $t0, $t0, 4		#Move to next student
+	addi $t1, $t1, 1		#Increase counter
+	
+	blt $t1, $s0, input_loop
+	
+	
+	li $t0, 0			#Initialize outer loop couter
+	
+outer_loop:
+	li $t1, 0			#Initialize inner loop counter
+	la $s6, student_marks
+	la $s7, student_names
+
+inner_loop:
+	lw $t2, 0($s6)			#Load current mark in $t2
+	lw $t3, 4($s6)			#Load next mark in $t3
+	bge $t2, $t3, no_swap		#if current mark >= next mark, no swap needed
+	
+	#Swap marks
+	sw $t3, 0($s6)
+	sw $t2, 4($s6)
+	
+
+	li $t4, 0			#swap name counter = 0
+copy_string:
+	add $s1, $s7, $t4		#$s1 stores address of student_names[i] 
+	add $s2, $s5, $t4		#s2 stores address of buffer[i]
+	lb $t5, 0($s1)			#$t5 stores value of student_names[i]
+	sb $t5, 0($s2)			#store value of student_names[i] in buffer[i]
+	addi $t4, $t4, 1
+	beq $t4, 40, swap1		#Loop ends until copy 2 names to buffer
+	j copy_string
+
+
+swap1:
+	li $t4, 0			#Initialize name counter again
+	
+countinue_swap1:
+	addi $s3, $s5, 20		#Move to next 20 bytes of buffer
+	add $s2, $s3, $t4		#$s2 stores address of buffer[20+i]
+	add $s1, $s7, $t4		#$s1 stores address of student_names[i]
+	lb $t5, 0($s2)			#$t5 stores value of buffer[20+i]
+	sb $t5, 0($s1)			#stores value of buffer[20+i] to student_names[i]
+	addi $t4, $t4, 1
+	beq $t4, 20, swap2		#Loops ends until swap 1 name
+	j countinue_swap1
+
+swap2: 
+	li $t4, 0			#Initialize name counter again
+
+countinue_swap2:
+	add $s2, $s5, $t4		#$s2 stores the address of buffer[i]
+	addi $s3, $s7, 20		
+	add $s1, $s3, $t4		#s1 stores the address of student_names[20+i]
+	lb $t5, 0($s2)			#load value of buffer[i] to $t5
+	sb $t5, 0($s1)			#store value of buffer[i] to student_names[20+i]
+	addi $t4, $t4, 1
+	beq $t4, 20, no_swap
+	j countinue_swap2
+	
+	
+no_swap:
+	addi $s6, $s6, 4		#Increase mark array pointer
+	addi $s7, $s7, 20		#Increase name array pointer
+	addi $t1, $t1, 1		#Increase inner loop counter by 1
+	blt $t1, $s0, inner_loop	#Repeat inner loop until all elements are checked
+	addi $t0, $t0, 1		#Increase outer loop counter by 1
+	blt $t0, $s0, outer_loop	#Repeat inner loop until all elements are checked
+	
+	
+	li $t4, 0
+
+#Print sorted list of students by mark
+	li $v0, 4
+	la $a0, print_sorted_list
+	syscall
+	li $v0, 4
+	la $a0, newline
+	syscall
+	li $t0, 0		#Initialize counter for printing loop
+	la $s7, student_names
+	la $s6, student_marks
+print_loop:
+	li $v0, 4
+	move $a0, $s7
+	syscall
+	addi $s7, $s7, 20
+	
+	li $v0, 1
+	lw $t5, 0($s6)
+	move $a0, $t5
+	syscall
+	addi $s6, $s6, 4
+	
+	li $v0, 4
+	la $a0, newline
+	syscall
+	 
+	addi $t0, $t0, 1
+	beq $t0, $s0, check_variable
+	j print_loop
+	
+check_variable:
+	li $v0, 4
+	la $a0, check_val	
+	syscall
+	li $v0, 1
+	la $t5, number_student
+	lw $a0, 0($t5)
+	syscall
+	j exit
+
+wrong_input:
+	li $v0, 4
+	la $a0, Wrong_input
+	syscall
+exit:
+	
+	
